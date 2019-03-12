@@ -36,7 +36,7 @@ function ProcessObject(obj, indent, addComma, isArray, isPropertyContent){
   var type = typeof obj;
   var clpsHtml ="";
   if(IsArray(obj)){
-
+  	console.log("Array",obj);
     if(obj.length == 0){
       html += GetRow(indent, "<span class='ArrayBrace'>[ ]</span>"+comma, isPropertyContent);
     }else{
@@ -49,7 +49,7 @@ function ProcessObject(obj, indent, addComma, isArray, isPropertyContent){
       html += GetRow(indent, clpsHtml+"<span class='ArrayBrace'>]</span>"+comma);
     }
   }else if(type == 'object'){
-
+  	console.log("object",obj);
     if (obj == null){
         html += FormatLiteral("null", "", comma, indent, isArray, "Null");
     }else if (obj.constructor == window._dateObj.constructor) { 
@@ -126,9 +126,14 @@ function FormatLiteral(literal, quote, comma, indent, isArray, style){
 
   //var str = "<span class='"+style+"'>"+quote+literal+quote+comma+"</span>";//删除内容
   var str = "<span class='"+style+"'>"+quote+quote+comma+"</span>";
-  if(typeof literal == 'number'){
-  	str = "<span class='"+style+"'>"+quote+" "+quote+comma+"</span>";
-  }
+  console.log(typeof literal,literal,isArray);
+  if(isArray){
+  	str = "<span class='"+style+"'>"+quote+literal+quote+comma+"</span>";
+  }else{
+	  if(typeof literal == 'number'){
+	  	str = "<span class='"+style+"'>"+quote+" "+quote+comma+"</span>";
+	  }
+	}
   if(isArray) str = GetRow(indent, str);
 
   return str;
