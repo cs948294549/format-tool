@@ -21,7 +21,7 @@ function Process(){
     // console.log(json);
     json = json.replace(/:[/S/s]*,/g, ":1,");
     json = json.replace(/:[/S/s]*}/g, ":1}");
-    console.log(json);
+    // console.log(json);
     // console.log(typeof(json));
     var obj = eval("["+json+"]");
     html = ProcessObject(obj[0], 0, false, false, false);
@@ -37,23 +37,28 @@ function ProcessObject(obj, indent, addComma, isArray, isPropertyContent){
   var html = "";
   var comma = (addComma) ? "<span class='Comma'>,</span> ":""; 
   var type = typeof obj;
-  console.log("type",type,"comma",comma);
+  // console.log("type",type,"comma",comma);
   var clpsHtml ="";
   if(IsArray(obj)){
   	console.log("Array",obj);
     if(obj.length == 0){
-      html += GetRow(indent, "<span class='ArrayBrace'>[ ]</span>"+comma, isPropertyContent);
+      // html += GetRow(indent, "<span class='ArrayBrace'>[ ]</span>"+comma, isPropertyContent);
+      html += GetRow(indent, "<span class='ArrayBrace'> </span>"+comma, isPropertyContent);
     }else{
-      clpsHtml = window.IsCollapsible ? "<span><img src=\""+window.ImgExpanded+"\" onClick=\"ExpImgClicked(this)\" /></span><span class='collapsible'>":"";
-      html += GetRow(indent, "<span class='ArrayBrace'>[</span>"+clpsHtml, isPropertyContent);
-      for(var i = 0; i < obj.length; i++){
-        html += ProcessObject(obj[i], indent + 1, i < (obj.length - 1), true, false);
-      }
-      clpsHtml = window.IsCollapsible ? "</span>":"";
-      html += GetRow(indent, clpsHtml+"<span class='ArrayBrace'>]</span>"+comma);
+      if(typeof obj[0]=="number"){
+        html += GetRow(indent, "<span class='ArrayBrace'> </span>"+comma, isPropertyContent);
+      }else{
+        clpsHtml = window.IsCollapsible ? "<span><img src=\""+window.ImgExpanded+"\" onClick=\"ExpImgClicked(this)\" /></span><span class='collapsible'>":"";
+        html += GetRow(indent, "<span class='ArrayBrace'>[</span>"+clpsHtml, isPropertyContent);
+        for(var i = 0; i < obj.length; i++){
+          html += ProcessObject(obj[i], indent + 1, i < (obj.length - 1), true, false);
+        }
+        clpsHtml = window.IsCollapsible ? "</span>":"";
+        html += GetRow(indent, clpsHtml+"<span class='ArrayBrace'>]</span>"+comma);
+    }
     }
   }else if(type == 'object'){
-  	console.log("object",obj);
+  	// console.log("object",obj);
     if (obj == null){
         html += FormatLiteral("null", "", comma, indent, isArray, "Null");
     }else if (obj.constructor == window._dateObj.constructor) { 
@@ -86,7 +91,7 @@ function ProcessObject(obj, indent, addComma, isArray, isPropertyContent){
       }
 
     }
-    console.log("object====html",html);
+    // console.log("object====html",html);
 
   }else if(type == 'number'){
 
@@ -131,7 +136,7 @@ function FormatLiteral(literal, quote, comma, indent, isArray, style){
 
   //var str = "<span class='"+style+"'>"+quote+literal+quote+comma+"</span>";//删除内容
   var str = "<span class='"+style+"'>"+quote+quote+comma+"</span>";
-  console.log(typeof literal,literal,isArray);
+  
   if(isArray){
   	str = "<span class='"+style+"'>"+quote+literal+quote+comma+"</span>";
   }else{
@@ -139,8 +144,9 @@ function FormatLiteral(literal, quote, comma, indent, isArray, style){
 	  	str = "<span class='"+style+"'>"+quote+" "+quote+comma+"</span>";
 	  }
 	}
+  console.log(isArray,"FormatLiteral=============",str);
   if(isArray) str = GetRow(indent, str);
-  console.log("FormatLiteral",);
+  console.log("FormatLiteral",str);
   return str;
 
 }
@@ -172,9 +178,8 @@ function GetRow(indent, data, isPropertyContent){
   for(var i = 0; i < indent && !isPropertyContent; i++) tabs += window.TAB;
 
   if(data != null && data.length > 0 && data.charAt(data.length-1) != "\n")
-
     data = data+"\n";
-  console.log("GetRow",tabs+data)
+  // console.log("GetRow",tabs+data)
   return tabs+data;                       
 
 }
