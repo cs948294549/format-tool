@@ -18,10 +18,10 @@ function Process(){
   try{
     if(json == "") json = "\"\"";
     json = json.replace(/[\r\n]/g, "");//remove /r/n
-    // console.log(json);
-    json = json.replace(/:[/S/s]*,/g, ":1,");
-    json = json.replace(/:[/S/s]*}/g, ":1}");
     console.log(json);
+    json = json.replace(/:[\s]*,/g, ":1,");
+    json = json.replace(/:[\s]*}/g, ":1}");
+    console.log("new json",json);
     // console.log(typeof(json));
     var obj = eval("["+json+"]");
     html = ProcessObject(obj[0], 0, false, false, false);
