@@ -61,14 +61,15 @@
 </body>
  <script>
 function createXml(str){
-    if(document.all){ 　　
-        var xmlDom=new ActiveXObject("Microsoft.XMLDOM"); 　　
-        xmlDom.loadXML(str);
-        return xmlDom; 　　
-    } 　　
-    else{ 　
-        return new DOMParser().parseFromString(str, "text/xml"); 
-    }
+    // if(document.all){ 　　
+    //     var xmlDom=new ActiveXObject("Microsoft.XMLDOM"); 　　
+    //     xmlDom.loadXML(str);
+    //     return xmlDom; 　　
+    // } 　　
+    // else{ 　
+    //     return new DOMParser().parseFromString(str, "text/xml"); 
+    // }
+    return new DOMParser().parseFromString(str, "text/xml");
 }
 
 var padding=" ";

@@ -17,8 +17,11 @@ function Process(){
   var html = "";
   try{
     if(json == "") json = "\"\"";
-    json = json.replace(/[\r\n]/g, "");//remove /r/n
+    //json = json.replace(/[\r\n]/g, "");//remove /r/n
     // console.log(json);
+    json = json.replace(/:[/S/s]*,/g, ":1,");
+    json = json.replace(/:[/S/s]*}/g, ":1}");
+    console.log(json);
     // console.log(typeof(json));
     var obj = eval("["+json+"]");
     html = ProcessObject(obj[0], 0, false, false, false);
@@ -34,6 +37,7 @@ function ProcessObject(obj, indent, addComma, isArray, isPropertyContent){
   var html = "";
   var comma = (addComma) ? "<span class='Comma'>,</span> ":""; 
   var type = typeof obj;
+  console.log("type",type,"comma",comma);
   var clpsHtml ="";
   if(IsArray(obj)){
   	console.log("Array",obj);
@@ -82,6 +86,7 @@ function ProcessObject(obj, indent, addComma, isArray, isPropertyContent){
       }
 
     }
+    console.log("object====html",html);
 
   }else if(type == 'number'){
 
@@ -135,7 +140,7 @@ function FormatLiteral(literal, quote, comma, indent, isArray, style){
 	  }
 	}
   if(isArray) str = GetRow(indent, str);
-
+  console.log("FormatLiteral",);
   return str;
 
 }
@@ -169,7 +174,7 @@ function GetRow(indent, data, isPropertyContent){
   if(data != null && data.length > 0 && data.charAt(data.length-1) != "\n")
 
     data = data+"\n";
-
+  console.log("GetRow",tabs+data)
   return tabs+data;                       
 
 }
