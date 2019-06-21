@@ -39,6 +39,27 @@
             -moz-border-radius: 4px;
             border-radius: 4px;
         }
+
+        .attributes_key{
+        	color:red;
+        	font-weight:bold;
+        }
+        .attributes_value{
+        	color:blue;
+        	font-weight:bold;
+        }
+        .equal{
+        	color:black;
+        	font-weight:bold;
+        }
+        .comment{
+        	color:green;
+        	font-weight:bold;
+        }
+        .element{
+        	color:blue;
+        	font-weight:bold;
+        }
     </style>
   </head>
 <body>
@@ -51,6 +72,7 @@
      <input id="padding" type="text" name="suojin" />
      <button id="submit" onclick="postData()" title="转换字符串">转换</button>
      <button id="clear" onclick="clearData()" title="清空数据">清除</button>
+     <button id="select" onclick="SelectAllClicked()" title="选中数据">全选</button>
 </section>
 <section class="mes-get">
 <div class="form-group">
@@ -74,52 +96,56 @@ function createXml(str){
 
 var padding=" ";
 
-function getxmlformat_ex(xmlObj,padding_data){
-    var str1="";
-    console.log("do========",xmlObj,"padding=======",padding_data);
-    if(xmlObj.childNodes.length==0){
-        var entityStr="";
-        if(xmlObj.nodeType==8){
-        	//write xml:<device><!--*****--></device>
-            entityStr="&lt;!--"+xmlObj.data+"--&gt;\n";
-            str1=str1+padding.repeat(padding_data)+entityStr;
-        }else if(xmlObj.nodeType==3){
-        	//write xml:<device>*****</device>
-            entityStr=xmlObj.data;
-            entityStr=entityStr.replace(/(^\s*)|(\s*$)/g,"");
-            if(entityStr!=""){
-            	entityStr=entityStr+"\n";
-            	str1=str1+padding.repeat(padding_data)+entityStr;
-            }
-        }else if(xmlObj.nodeType==1){
-        	//write xml:<device />
-        	entityStr="&lt;"+xmlObj.tagName+"/&gt;\n";
-        	str1=str1+padding.repeat(padding_data)+entityStr;
-        }
-        console.log(str1);
-    }else{
-    	//get xml version
-    	console.log("version==============",xmlObj.attributes);
-    	var version="";
-    	for(var v=0;v<xmlObj.attributes.length;v++){
-    		version=version+xmlObj.attributes[v].nodeName;
-    		version=version+"=";
-    		version=version+"\""+xmlObj.attributes[v].nodeValue+"\" ";
-    	}
-    	version=version.replace(/\s*$/g,"");
+function getxmlformat(xmlObj,padding_data){
+	var html="";
+	if(xmlObj.nodeType==8){
+		var res="";
+		res="&lt;!--"+xmlObj.nodeValue+"--&gt;"
+		html+=padding.repeat(padding_data)
+		html+="<span class='comment'>"+res+"</span>\n"
+		console.log("type=8----"+html);
+	}
+	if(xmlObj.nodeType==3){
+        html+=padding.repeat(padding_data)
+        html+="<span class='xml_value'>"+xmlObj.nodeValue+"</span>\n"
+		console.log("type=3----"+xmlObj.nodeValue);
+	}
+	if(xmlObj.nodeType==2){
+		html+="<span class='attributes_key'>"+xmlObj.nodeName+"</span>"
+		html+="<span class='equal'>=</span>"
+		html+="<span class='attributes_value'>\""+xmlObj.nodeValue+"\"</span>"
+		console.log("type=2----"+xmlObj.nodeName+":"+xmlObj.nodeValue);
+	}
+	if(xmlObj.nodeType==9){
+		console.log("type=9----"+xmlObj.documentElement);
+	}
+	if(xmlObj.nodeType==1){
+		console.log("type=1----"+xmlObj.nodeName);
 
-    	//nodetype=1, write xml version
-    	if(version==""){
-    		str1=str1+padding.repeat(padding_data)+"&lt;"+xmlObj.tagName+"&gt;\n";
-    	}else{
-        	str1=str1+padding.repeat(padding_data)+"&lt;"+xmlObj.tagName+" "+version+"&gt;\n";
-        }
-        for(var i=0;i<xmlObj.childNodes.length;i++){
-            str1=str1+getxmlformat_ex(xmlObj.childNodes[i],padding_data+1);
-        }
-        str1=str1+padding.repeat(padding_data)+"&lt;/"+xmlObj.tagName+"&gt;\n";
-    }
-    return str1;
+		//组装<a b="ccc">  start
+		html+=padding.repeat(padding_data)
+		html+="<span class='element'>&lt;"+xmlObj.nodeName+"</span>";
+		if(xmlObj.attributes.length!=0){
+			html+=" ";
+			for(var i=0;i<xmlObj.attributes.length;i++){
+				html+=getxmlformat(xmlObj.attributes[i],padding_data+1);
+				html+=" ";
+			}
+		}
+		html+="<span class='element'>&gt;</span>\n";
+		//组装<a b="ccc">  end
+
+		//递归生成子节点
+		for(var i=0;i<xmlObj.childNodes.length;i++){
+	            html+=getxmlformat(xmlObj.childNodes[i],padding_data+1);
+	        }
+		
+		//组装</a>  start
+		html+=padding.repeat(padding_data)
+		html+="<span class='element'>&lt;/"+xmlObj.nodeName+"&gt;</span>\n";
+		//组装</a>  end
+	}
+	return html;
 }
 
 function postData(){
@@ -135,6 +161,8 @@ function postData(){
     console.log("1st",xmlStr);
     xmlStr=xmlStr.replace(/\—/g, "--");
     console.log("2st",xmlStr);
+    xmlStr=xmlStr.replace(/>\s*</g, "><");
+    console.log("3st",xmlStr);
 
     //trans xml
     var xmlFormat = createXml(xmlStr);
@@ -142,12 +170,39 @@ function postData(){
     var root=xmlFormat.documentElement;
 
     console.log("root=============",root);
-    var html="<pre>"+getxmlformat_ex(root,0)+"</pre>";
+    var html="<pre>"+getxmlformat(root,0)+"</pre>";
     document.getElementById("transStr").innerHTML=html;
       }
+
+function $id(id){ return document.getElementById(id); }
+
+function SelectAllClicked(){
+      if(!!document.selection && !!document.selection.empty) {
+        document.selection.empty();
+      } else if(window.getSelection) {
+        var sel = window.getSelection();
+        if(sel.removeAllRanges) {
+          window.getSelection().removeAllRanges();
+        }
+      }
+      var range = 
+          (!!document.body && !!document.body.createTextRange)
+              ? document.body.createTextRange()
+              : document.createRange();
+      if(!!range.selectNode)
+        range.selectNode($id("transStr"));
+      else if(range.moveToElementText)
+        range.moveToElementText($id("transStr"));
+      if(!!range.select)
+        range.select($id("transStr"));
+      else
+        window.getSelection().addRange(range);
+    }
+
 function clearData(){
 	document.getElementById("xmlString").value='';
 	document.getElementById("transStr").innerHTML='';
 }
+
 </script>
 </html>
