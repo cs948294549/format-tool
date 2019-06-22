@@ -60,6 +60,19 @@
         	color:blue;
         	font-weight:bold;
         }
+        .xml_value{
+            color:black;
+            font-weight:bold;
+        }
+        .errorMsg{
+            color:red;
+            font-weight:bold;
+        }
+        .errorMsg_ori{
+            color:black;
+            font-weight:bold;
+        }
+
     </style>
   </head>
 <body>
@@ -103,25 +116,20 @@ function getxmlformat(xmlObj,padding_data){
 		res="&lt;!--"+xmlObj.nodeValue+"--&gt;"
 		html+=padding.repeat(padding_data)
 		html+="<span class='comment'>"+res+"</span>\n"
-		console.log("type=8----"+html);
 	}
 	if(xmlObj.nodeType==3){
         html+=padding.repeat(padding_data)
         html+="<span class='xml_value'>"+xmlObj.nodeValue+"</span>\n"
-		console.log("type=3----"+xmlObj.nodeValue);
 	}
 	if(xmlObj.nodeType==2){
 		html+="<span class='attributes_key'>"+xmlObj.nodeName+"</span>"
 		html+="<span class='equal'>=</span>"
 		html+="<span class='attributes_value'>\""+xmlObj.nodeValue+"\"</span>"
-		console.log("type=2----"+xmlObj.nodeName+":"+xmlObj.nodeValue);
 	}
 	if(xmlObj.nodeType==9){
 		console.log("type=9----"+xmlObj.documentElement);
 	}
 	if(xmlObj.nodeType==1){
-		console.log("type=1----"+xmlObj.nodeName);
-
 		//组装<a b="ccc">  start
 		html+=padding.repeat(padding_data)
 		html+="<span class='element'>&lt;"+xmlObj.nodeName+"</span>";
@@ -148,6 +156,49 @@ function getxmlformat(xmlObj,padding_data){
 	return html;
 }
 
+function troubleshoot(){
+    var xmlStr=document.getElementById("xmlString").value;// xml字符串
+
+    //format string
+    xmlStr=xmlStr.replace(/[\r\n]/g, "");
+    xmlStr=xmlStr.replace(/\—/g, "--");
+    xmlStr=xmlStr.replace(/>\s*</g, "><");
+    xmlStr=xmlStr.replace(/>\s*/g, ">");
+    xmlStr=xmlStr.replace(/\s*</g, "<");
+    xmlStr=xmlStr.replace(/>/g, ">\n");
+
+
+    var xmlFormat = createXml(xmlStr);
+    var root=xmlFormat.documentElement;
+
+    var sys=getBrowserInfo();
+    console.log(sys.browser,sys.ver);
+
+    var html=""
+    if(sys.browser=="firefox"){
+        if(root.nodeName=="parsererror"){
+            var errMsg=root.innerHTML;
+            html="<pre><span class='errorMsg'>错误参考位置：（附近标记对）</span>\n";
+            html+="<span class='errorMsg_ori'>"+errMsg+"</span>";
+            html+="</pre>";
+        }
+    }
+    if(sys.browser=="chrome"){
+        if(root.childNodes[0].nodeName=="parsererror"){
+            var errMsg=root.childNodes[0].innerHTML;
+            html="<pre><span class='errorMsg'>错误参考位置：(附近标记对)</span>\n";
+            html+="<span class='errorMsg_ori'>"+errMsg+"</span>";
+            html+="</pre>";
+        }
+    }
+    document.getElementById("transStr").innerHTML=html;
+    if(html==""){
+        return true;
+    }else{
+        return false;
+    }
+}
+
 function postData(){
     var padding_num=document.getElementById("padding").value;
     console.log("padding=========================",padding_num);
@@ -163,16 +214,35 @@ function postData(){
     console.log("2st",xmlStr);
     xmlStr=xmlStr.replace(/>\s*</g, "><");
     console.log("3st",xmlStr);
+    xmlStr=xmlStr.replace(/>\s*/g, ">");
+    xmlStr=xmlStr.replace(/\s*</g, "<");
+    console.log("4st",xmlStr);
+
 
     //trans xml
     var xmlFormat = createXml(xmlStr);
     console.log(xmlFormat);
     var root=xmlFormat.documentElement;
-
     console.log("root=============",root);
-    var html="<pre>"+getxmlformat(root,0)+"</pre>";
-    document.getElementById("transStr").innerHTML=html;
-      }
+
+    var flag=troubleshoot();
+    console.log(flag);
+    if(flag){
+        var html="<pre>"+getxmlformat(root,0)+"</pre>";
+        document.getElementById("transStr").innerHTML=html;
+    }
+    }
+
+
+function getBrowserInfo(){
+    var Sys = {};
+    var ua = navigator.userAgent.toLowerCase();
+    var re =/(msie|firefox|chrome|opera|version).*?([\d.]+)/;
+    var m = ua.match(re);
+    Sys.browser = m[1].replace(/version/, "'safari");
+    Sys.ver = m[2];
+    return Sys;
+}
 
 function $id(id){ return document.getElementById(id); }
 
