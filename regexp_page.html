@@ -1,0 +1,160 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="zh-cn" lang="zh-cn">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta http-equiv="Content-Language" content="zh-cn" />
+    <title>正则提取数据</title>
+    <style>
+        .mes-send {
+            padding: .65em;
+            border: 1px solid #ccc;
+            -webkit-border-radius: 5px;
+            -moz-border-radius: 5px;
+            border-radius: 5px;
+            }
+        .form-group { padding: 1.25em; }
+        .form-group label { vertical-align: top; }
+        .mes-send textarea {
+            padding: 1px;
+            width: 100%;
+            height: 200px;
+            border: 1px solid #b7b7b7;
+            -webkit-border-radius: 4px;
+            -moz-border-radius: 4px;
+            border-radius: 4px;
+        }
+        .mes-get {
+            padding: .65em;
+            border: 1px solid #ccc;
+            -webkit-border-radius: 5px;
+            -moz-border-radius: 5px;
+            border-radius: 5px;
+            }
+        .mes-get textarea {
+            padding: 1px;
+            width: 100%;
+            height: 400px;
+            border: 1px solid #b7b7b7;
+            -webkit-border-radius: 4px;
+            -moz-border-radius: 4px;
+            border-radius: 4px;
+        }
+    </style>
+  </head>
+<body>
+<section class="mes-send">
+    <div class="form-group">
+        <label>内容：</label>
+        <textarea id="CString"></textarea>
+    </div>
+    <div style="display: flex;margin: 7px;">
+    	<div>
+    		<input type="radio" id="lb1" name="fav_template" value="1" onclick="change_reg(1)">
+        	<label for="lb1">身份证</label>
+    	</div>
+
+		<div>
+			<input type="radio" id="lb2" name="fav_template" value="2"  onclick="change_reg(2)">
+			<label for="lb2">IP</label>
+		</div>
+
+		<div>
+			<input type="radio" id="lb3" name="fav_template" value="3"  onclick="change_reg(3)">
+			<label for="lb3">资产号</label>
+		</div>
+
+		<div>
+			<input type="radio" id="lb4" name="fav_template" value="4" onclick="change_reg(4)">
+			<label for="lb4">kf入室</label>
+		</div>
+
+		<div>
+			<input type="radio" id="lb5" name="fav_template" value="5"  onclick="change_reg(5)">
+			<label for="lb5">mysql字段</label>
+		</div>
+    </div>
+    <div style="margin: 7px;">
+    	<label>正则表达式：</label>
+	     <input id="reg_str" style="width: 500px;" type="text" name="reg" />
+	     <label>转换格式：</label>
+	     <input id="format" style="width: 500px;" type="text" name="format" />
+	     <button id="submit" onclick="postData()" title="转换字符串">转换</button>
+	     <button id="clear" onclick="clearData()" title="清空数据">清除</button>
+    </div>
+</section>
+<section class="mes-get">
+<div class="form-group">
+    <label>结果：</label>
+    <div id="transStr"></div>
+</div>
+</section>
+</body>
+ <script>
+	function postData(){
+	    var regexp=document.getElementById("reg_str").value;
+	    var reg_format=document.getElementById("format").value;
+
+	    // regexp = "(\\S+)\\s+(\\S+)\\s+(\\d{18})\\s+(\\d{11})(?:\\s?)"
+	    // reg_format = "${1}	${2}	${3}	${4}	"
+		// console.log("regexp=========================",regexp);
+	 //    console.log("format=========================",reg_format);
+
+	    var CStr=document.getElementById("CString").value;// c字符串
+	    // console.log("input=========================",CStr);
+
+	    let reg = RegExp(regexp, "g")
+        let replace_reg = RegExp(/\${(\d+)}/, "g")
+        let row_tmp = reg_format.replace(/\${(\d+)}/g,"${match[$1]}")
+        // console.log("template===", row_tmp)
+
+        let result = "";
+        let match;
+        reg.lastIndex = 0;
+        while ((match = reg.exec(CStr)) !== null) {
+          if(row_tmp!=""){
+            let dd_tmp = row_tmp;
+            for(let i=0;i<match.length;i++){
+              dd_tmp = dd_tmp.replace("${match["+i+"]}", match[i])
+            }
+            result += dd_tmp + "\n";
+          }else{
+            result += match[0] + "\n";
+          }
+        }
+        // console.log("result===", result)
+
+
+	    var html="<pre>"+result+"</pre>";
+	    document.getElementById("transStr").innerHTML=html;
+	}
+
+	function change_reg(val){
+		console.log("切换模板===", val)
+		let regexp = document.getElementById("reg_str");
+		let fomat = document.getElementById("format");
+		if(val==1){
+		  let _IDRe18 = "([1-6][1-9]|50)\\d{4}(18|19|20)\\d{2}((0[1-9])|10|11|12)(([0-2][1-9])|10|20|30|31)\\d{3}[0-9Xx]";
+          let _IDre15 = "([1-6][1-9]|50)\\d{4}\\d{2}((0[1-9])|10|11|12)(([0-2][1-9])|10|20|30|31)\\d{3}";
+          regexp.value = _IDRe18;
+          fomat.value = "";
+		}else if(val==2){
+          regexp.value = "((2(5[0-5]|[0-4]\\d))|[0-1]?\\d{1,2})(\\.((2(5[0-5]|[0-4]\\d))|[0-1]?\\d{1,2})){3}";
+          fomat.value = "";
+		}else if(val==3){
+          regexp.value = "[a-zA-Z]+-[a-zA-Z]+-[0-9a-zA-Z]+";
+          fomat.value = "";
+		}else if(val==4){
+          regexp.value = "(\\S+)\\s+(\\S+)\\s+(\\d{18})\\s+(\\d{11})(?:\\s?)";
+          fomat.value = "${1}\t${2}\t${3}\t${4}\t";
+		}else if(val==5){
+          regexp.value = "\\|\\s+(\\S+)?\\s+\\|\\s+(\\S+)?\\s+\\|\\s+(\\S+)?\\s+\\|\\s+(\\S+)?\\s+\\|\\s+(\\S+)?\\s+\\|\\s+(\\S+)?\\s+\\|\\n+";
+          fomat.value = "${1}";
+		}
+
+	}
+	function clearData(){
+		document.getElementById("CString").value='';
+		document.getElementById("transStr").innerHTML='';
+	}
+</script>
+</html>
